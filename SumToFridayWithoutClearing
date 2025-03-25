@@ -1,0 +1,58 @@
+Sub SumToFridayWithoutClearing()
+    Dim ws As Worksheet
+    Set ws = ActiveSheet  ' 使用目前的工作表
+    
+    Dim lastRow As Integer, lastCol As Integer
+    Dim col As Integer, row As Integer
+    Dim fridayCol As Integer
+    Dim sumValue As Double
+    Dim isEmptyRow As Boolean
+    
+    ' 找到最後一列和最後一欄
+    lastRow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+    lastCol = ws.Cells(1, Columns.Count).End(xlToLeft).Column
+    
+    ' 逐欄檢查，找出**第一個星期五**的欄位
+    For col = 1 To lastCol
+        If IsDate(ws.Cells(1, col).Value) Then ' 確保是日期
+            If Weekday(ws.Cells(1, col).Value, vbSunday) = 6 Then  ' 星期五 = 6
+                fridayCol = col
+                Exit For  ' 找到第一個星期五後停止
+            End If
+        End If
+    Next col
+    
+    ' 若無法找到星期五，則結束
+    If fridayCol = 0 Then
+        MsgBox "找不到星期五的日期", vbExclamation
+        Exit Sub
+    End If
+    
+    ' 逐行處理加總
+    For row = 2 To lastRow
+        sumValue = 0
+        isEmptyRow = True
+        
+        ' 加總左側數值
+        For col = 1 To fridayCol - 1
+            If IsNumeric(ws.Cells(row, col).Value) Then
+                sumValue = sumValue + ws.Cells(row, col).Value
+                isEmptyRow = False ' 只要有數值，代表這行不是空的
+            End If
+        Next col
+        
+        ' 若星期五已有數值，加總
+        If IsNumeric(ws.Cells(row, fridayCol).Value) Then
+            sumValue = sumValue + ws.Cells(row, fridayCol).Value
+        End If
+        
+        ' 只有當 sumValue 不為 0 時才填入值
+        If sumValue <> 0 Then
+            ws.Cells(row, fridayCol).Value = sumValue
+        Else
+            ws.Cells(row, fridayCol).ClearContents ' 確保空行不填入 0
+        End If
+    Next row
+    
+    MsgBox "數值已加總到星期五，且保留原始數據", vbInformation
+End Sub
